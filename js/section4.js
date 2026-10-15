@@ -108,9 +108,24 @@ const hBarHeight = 500 - hBarMargin.top - hBarMargin.bottom;
 
 // Create SVG for horizontal bar chart
 
+const hBarSvg = d3.select('#demo-4')
+    .append('svg')
+    .attr('viewBox', `0 0 ${hBarWidth + hBarMargin.left + hBbarMargin.right} ${hBarHeight + hBarMargin.top + hBarMargin.bottom}`)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .append('g')
+    .attr('transform', `translate(${hBarMargin.left},${hBarMargin.top})`);
 
 // Create scales for the horizontal bar chart
 
+const xGasBarScale = d3.scaleBand()
+    .domain(top15Gas.map(d => d.state)) // Input: state names
+    .range([0, hBarWidth]) // Output: width of the chart
+    .padding(0.25); // Padding between bars
+
+// Y scale - linear scale for electricity prices
+const yGasBar = d3.scaleLinear()
+    .domain([0, d3.max(top15, d => d.elec)]) // Input: from 0 to max elec price in top 15
+    .range([barHeight, 0]);
 
 // Create axes and append them to the svg
 
