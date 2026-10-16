@@ -102,9 +102,9 @@ let top15Gas = energyData.slice(0, 15); // Get top 15 states
 top15Gas = top15Gas.map(d => ({ state: d.state, gas: parseFloat(d.gas) })); // Convert gas price to number and keep only state and gas
 
 // set the dimensions for the horizontal bar chart
-const hBarMargin = { top: 30, right: 30, bottom: 80, left: 70 };
-const hBarWidth = 700 - hBarMargin.left - hBarMargin.right;
-const hBarHeight = 380 - hBarMargin.top - hBarMargin.bottom;
+const hBarMargin = { top: 30, right: 30, bottom: 80, left: 100 };
+const hBarWidth = 500 - hBarMargin.left - hBarMargin.right;
+const hBarHeight = 400 - hBarMargin.top - hBarMargin.bottom;
 
 // Create SVG for horizontal bar chart
 
@@ -117,44 +117,43 @@ const hBarSvg = d3.select('#demo-4')
 
 // Create scales for the horizontal bar chart
 
-const xGasBarScale = d3.scaleBand()
-    .domain(top15Gas.map(d => d.state))
-    .range([0, hBarWidth])
-    .padding(0.25);
-
-const yGasBar = d3.scaleLinear()
+const xGasBarScale = d3.scaleLinear()
     .domain([0, d3.max(top15Gas, d => d.gas)])
-    .range([barHeight, 0]);
+    .range([0, hBarWidth]);
+
+const yGasBar = d3.scaleBand()
+    .domain(top15Gas.map(d => d.state))
+    .range([hBarHeight, 0])
+    .padding(0.25);
 
 // Create axes and append them to the svg
 
 // X axis
-const xAxisGas = d3.axisBottom(xGasBarScale);
+const xAxisGas = d3.axisBottom(xGasBarScale)
+    .ticks(5)
+    .tickFormat(d => `$${d.toFixed(2)}`);
 
 hBarSvg.append('g')
-    .attr('transform', `translate(0, ${hBarHeight})`) // Move x axis to the bottom of the chart
-    .call(xAxisGas)
-    .selectAll('text') // Rotate x axis labels for better readability
-    .attr('transform', 'rotate(-45)')
-    .style('text-anchor', 'end');
+    .attr('transform', `translate(0, ${hBarHeight})`)
+    .call(xAxisGas);
 
 // Y axis
-const yAxisGas = d3.axisLeft(yGasBar)
-    .ticks(5)
-    .tickFormat(d => `$${d.toFixed(2)}`); // Set number of ticks on y axis
+const yAxisGas = d3.axisLeft(yGasBar);
 
 hBarSvg.append('g')
-    .call(yAxisGas);
+    .call(yAxisGas)
+    .selectAll('text')
+    .style('text-anchor', 'end');
 
 // Create and append bars to the chart
 
 hBarSvg.selectAll('rect')
     .data(top15Gas)
     .join('rect')
-    .attr('x', d => xGasBarScale(d.state))
-    .attr('y', d => yGasBar(d.gas))
-    .attr('width', xGasBarScale.bandwidth())
-    .attr('height', d => hBarHeight - yGasBar(d.gas))
+    .attr('x', 0.5)
+    .attr('y', d => yGasBar(d.state))
+    .attr('width', d => xGasBarScale(d.gas))
+    .attr('height', yGasBar.bandwidth())
     .attr('fill', 'orange')
 
 // Chart title
@@ -170,9 +169,8 @@ hBarSvg.append('text')
 // X axis label
 
 hBarSvg.append('text')
-    .attr('transform', 'rotate(-90)') // Rotate the text to be vertical
-    .attr('x', -hBarHeight / 2) // Center the label vertically along the y axis
-    .attr('y', -55) // Position the label to the left of the y axis
-    .attr('text-anchor', 'middle') // Center the text
+    .attr('x', hBarWidth / 2)
+    .attr('y', hBarHeight + 55)
+    .attr('text-anchor', 'middle')
     .style('font-size', '12px')
     .text('Gas Price (per Gallon)');
